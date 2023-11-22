@@ -2,6 +2,8 @@ import Router from "koa-router";
 import axios from "axios";
 import { RefreshToken } from "../auth";
 import { CreateOrder, CreateAnotherOrder, QueryOrders } from "../files";
+import { getAllOrders } from "../controller/wixController";
+import { prismaExperiment } from "../controller/integController";
 
 // interface RefreshTokenRequestBody {
 //     refresh_token: string;
@@ -54,7 +56,7 @@ router.post("/orders", async (ctx) => {
     const refreshToken = await RefreshToken();
 
 
-    const order = await axios.post('https://www.wixapis.com/stores/v2/orders', CreateAnotherOrder, {
+    const order = await axios.post('https://www.wixapis.com/stores/v2/orders', CreateOrder, {
         headers: {
             'Content-Type': 'application/json',
             'Authorization': refreshToken.data.access_token
@@ -103,10 +105,20 @@ router.post("/orders-all", async (ctx) => {
   }
 });
 
-router.get('/ecomm/woo/orders/get', async (ctx) => {
+router.get('/ecomm/wix/orders/get', async (ctx) => {
   try {
+    const refreshToken = await RefreshToken();
+    const order = await getAllOrders(refreshToken)
 
-  } catch(error:any) {
+    ctx.body = {
+        order_response: order.data
+        // prisma: prismaExperiment()
+    }
+    ctx.status = order.status
+
+    // console.log(prismaExperiment(), 'prisma experiment')
+
+  } catch (error: any) {
     console.error("Error:", error);
     console.error(
       "Response Data:",

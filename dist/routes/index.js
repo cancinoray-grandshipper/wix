@@ -16,6 +16,7 @@ const koa_router_1 = __importDefault(require("koa-router"));
 const axios_1 = __importDefault(require("axios"));
 const auth_1 = require("../auth");
 const files_1 = require("../files");
+const wixController_1 = require("../controller/wixController");
 // interface RefreshTokenRequestBody {
 //     refresh_token: string;
 // }
@@ -56,7 +57,7 @@ router.post("/using-token", (ctx) => __awaiter(void 0, void 0, void 0, function*
 router.post("/orders", (ctx) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const refreshToken = yield (0, auth_1.RefreshToken)();
-        const order = yield axios_1.default.post('https://www.wixapis.com/stores/v2/orders', files_1.CreateAnotherOrder, {
+        const order = yield axios_1.default.post('https://www.wixapis.com/stores/v2/orders', files_1.CreateOrder, {
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': refreshToken.data.access_token
@@ -95,8 +96,16 @@ router.post("/orders-all", (ctx) => __awaiter(void 0, void 0, void 0, function* 
         ctx.body = "Internal Server Error";
     }
 }));
-router.get('/ecomm/woo/orders/get', (ctx) => __awaiter(void 0, void 0, void 0, function* () {
+router.get('/ecomm/wix/orders/get', (ctx) => __awaiter(void 0, void 0, void 0, function* () {
     try {
+        const refreshToken = yield (0, auth_1.RefreshToken)();
+        const order = yield (0, wixController_1.getAllOrders)(refreshToken);
+        ctx.body = {
+            order_response: order.data
+            // prisma: prismaExperiment()
+        };
+        ctx.status = order.status;
+        // console.log(prismaExperiment(), 'prisma experiment')
     }
     catch (error) {
         console.error("Error:", error);

@@ -2,6 +2,6 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.config = void 0;
 exports.config = {
-    port: process.env.PORT || '3000'
+    port: process.env.PORT || '7000'
 };
 //# sourceMappingURL=config.js.map

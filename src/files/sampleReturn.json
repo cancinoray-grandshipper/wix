@@ -1,0 +1,134 @@
+{
+    "order_response": {
+        "orders": [
+            {
+                "id": "273c06a1-2248-45db-9004-c4a66e547b46",
+                "number": 10015,
+                "dateCreated": "2023-11-10T03:40:48.030Z",
+                "buyerInfo": {
+                    "id": "5588cc3c-1f67-46c2-affe-ff80a526af86",
+                    "type": "CONTACT",
+                    "identityType": "CONTACT",
+                    "firstName": "John",
+                    "lastName": "Smith",
+                    "phone": "+972 555234555",
+                    "email": "john.smith@example.com",
+                    "contactId": "5588cc3c-1f67-46c2-affe-ff80a526af86"
+                },
+                "currency": "PHP",
+                "weightUnit": "KG",
+                "totals": {
+                    "subtotal": "20",
+                    "shipping": "3",
+                    "tax": "3",
+                    "discount": "10",
+                    "total": "100",
+                    "weight": "30",
+                    "quantity": 2
+                },
+                "billingInfo": {
+                    "paymentMethod": "PayPal",
+                    "externalTransactionId": "tx_1806",
+                    "paymentProviderTransactionId": "tx_1806",
+                    "paymentGatewayTransactionId": "tx_1806",
+                    "address": {
+                        "fullName": {
+                            "firstName": "John",
+                            "lastName": "Smith"
+                        },
+                        "country": "US",
+                        "city": "New York",
+                        "zipCode": "92544",
+                        "phone": "+972 555234555",
+                        "email": "john.smith@example.com"
+                    },
+                    "paidDate": "2023-11-10T03:40:48.097Z",
+                    "refundableByPaymentProvider": true
+                },
+                "shippingInfo": {
+                    "deliveryOption": "Express",
+                    "estimatedDeliveryTime": "Today",
+                    "shippingRegion": "Domestic",
+                    "shipmentDetails": {
+                        "address": {
+                            "fullName": {
+                                "firstName": "Jan",
+                                "lastName": "Smile"
+                            },
+                            "country": "US",
+                            "city": "New York",
+                            "zipCode": "92544",
+                            "phone": "+972 555234555",
+                            "email": "john.smith@example.com"
+                        },
+                        "discount": "0",
+                        "tax": "1",
+                        "priceData": {
+                            "taxIncludedInPrice": false,
+                            "price": "3"
+                        }
+                    }
+                },
+                "read": false,
+                "archived": false,
+                "paymentStatus": "PAID",
+                "fulfillmentStatus": "NOT_FULFILLED",
+                "lineItems": [
+                    {
+                        "index": 1,
+                        "quantity": 2,
+                        "price": "5",
+                        "name": "my product",
+                        "productId": "a1f9d337-f831-4529-31e6-67db8fd4e1aa",
+                        "totalPrice": "10",
+                        "lineItemType": "PHYSICAL",
+                        "options": [],
+                        "customTextFields": [],
+                        "weight": "15.0",
+                        "sku": "12345678",
+                        "discount": "1",
+                        "tax": "1",
+                        "taxIncludedInPrice": false,
+                        "priceData": {
+                            "taxIncludedInPrice": false,
+                            "price": "5",
+                            "totalPrice": "10"
+                        },
+                        "refundedQuantity": 0
+                    }
+                ],
+                "activities": [
+                    {
+                        "type": "ORDER_PLACED",
+                        "timestamp": "2023-11-10T03:40:48.030Z"
+                    },
+                    {
+                        "type": "ORDER_PAID",
+                        "timestamp": "2023-11-10T03:40:48.097Z"
+                    }
+                ],
+                "fulfillments": [],
+                "discount": {
+                    "value": "10"
+                },
+                "buyerLanguage": "en",
+                "channelInfo": {
+                    "type": "WEB"
+                },
+                "enteredBy": {
+                    "id": "f9b675e1-1503-4b95-9472-33d68c1d446f",
+                    "identityType": "APP"
+                },
+                "lastUpdated": "2023-11-10T03:40:48.611Z",
+                "numericId": "10015",
+                "refunds": [],
+                "isInternalOrderCreate": false
+            }
+        ],
+        "metadata": {
+            "items": 100,
+            "offset": 0
+        },
+        "totalResults": 14
+    }
+}
