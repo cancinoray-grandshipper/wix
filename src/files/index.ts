@@ -338,8 +338,15 @@ export const QueryOrders = {
     'query': {
         'filter': '{"paymentStatus":"PAID"}',
         'paging': {
-         'limit': 100,
+         'limit': 1,
         },
-        'sort': '[{"number": "desc"}]'
+        'sort': '{"number": "desc"}'
       },
+}
+
+export const MyFolder = {
+  "folder": {
+    "name": "My Folder",
+    "parentId": "root"
+  }
 }

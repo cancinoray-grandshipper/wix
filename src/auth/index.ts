@@ -4,6 +4,9 @@ import dotenv from 'dotenv'
 // Load environment variables from the .env file
 dotenv.config();
 
+const AUTH_PROVIDER_BASE_URL = 'https://www.wixapis.com/oauth';
+const INSTANCE_API_URL = 'https://www.wixapis.com/apps/v1'
+
 export const RefreshToken = async() => {
     try {
         // Define the OAuth request parameters
@@ -15,7 +18,7 @@ export const RefreshToken = async() => {
         };
     
         // Send the PUT request to the Wix OAuth Access API
-        const response = await axios.post('https://www.wixapis.com/oauth/access', oauthRequest, {
+        const response = await axios.post(`${AUTH_PROVIDER_BASE_URL}/access`, oauthRequest, {
           headers: { 'Content-Type': 'application/json' },
         });
 
@@ -26,3 +29,67 @@ export const RefreshToken = async() => {
     throw error;
     }
 }
+
+export const getAccessTokensFromWix = async (authCode:any) => {
+  try {
+    const response = axios.post(`${AUTH_PROVIDER_BASE_URL}/access`, {
+      code: authCode,
+      client_secret: process.env.CLIENT_SECRET,
+      client_id: process.env.CLIENT_ID,
+      grant_type: 'authorization_code'
+    })
+    console.log(response, 'response!')
+    return response;
+  } catch(error: any) {
+    console.error
+    console.error('Response Data:', error.response ? error.response.data : 'No response data');
+  }
+}
+
+export const getAccessToken = async (refreshToken: any) => {
+  try {
+    const response = axios.post(`${AUTH_PROVIDER_BASE_URL}/access`, {
+      refresh_token: refreshToken,
+      client_secret: process.env.CLIENT_SECRET,
+      client_id: process.env.CLIENT_ID,
+      grant_type: 'refresh_token'
+    })
+    return response;
+  } catch(error: any) {
+    console.error
+    console.error('Response Data:', error.response ? error.response.data : 'No response data');
+  }
+}
+
+export const getAppInstance = async(refreshToken:any) => {
+  try {
+    console.log(`getAppInstance with refreshToken = ${refreshToken}`);
+    console.log("==============================");
+    const response:any = await getAccessToken(refreshToken);
+    console.log(response.data.access_token, 'is there an access token here?')
+    const access_token = response.data.access_token
+
+    console.log(`accessToken = ${access_token}`);
+
+    const body = {
+      // *** PUT YOUR PARAMS HERE ***
+      //query: {limit: 10},
+    };
+    const options = {
+      headers: {
+        authorization: access_token,
+      },
+    };
+    const appInstance = axios.create({
+      baseURL: INSTANCE_API_URL,
+      headers: {authorization: access_token}
+    });
+    const instance = (await appInstance.get('instance', body)).data;
+
+    return instance;
+  } catch (e) {
+    console.log('error in getAppInstance');
+    console.log({e});
+    return;
+  }
+};

@@ -1,38 +1,28 @@
 import { PrismaClient, Prisma } from '@prisma/client'
 import axios from "axios";
-import { getIntegId,processInteg } from "./integController"
+import { getIntegId,processInteg, getUserId } from "./integController"
+import { RefreshToken } from "../auth";
 
 const prisma = new PrismaClient()
 
-// const originJson = `{
-//   "id": ${gsOrigin.id},
-//   "first_name": "${gsOrigin.first_name}",
-//   "last_name": "${gsOrigin.last_name}",
-//   "company": "${gsOrigin.company}",
-//   "address": "${gsOrigin.address}",
-//   "city": "${gsOrigin.city}",
-//   "state": "${gsOrigin.state}",
-//   "postal": "${gsOrigin.postal}",
-//   "postal_origin": "${gsOrigin.postal_origin}",
-//   "country": "${gsOrigin.country}",
-//   "phone": "${gsOrigin.phone}",
-//   "is_default": 1,
-//   "timezone": "${gsOrigin.timezone}"
-// }`;
-
-// export const getOrders = async(ctx) =>  {
-//   let userId;
-
+// export const getOrders = async(ctx:any) =>  {
+//   let userId:any
 //   if(ctx.get('maskedId') > 0) {
-//     userId = parseInt(ctx.get('maskedId'))
+//     userId = ctx.get('maskedId')
+//     userId = parseInt(userId);
+//   } else {
+//     userId = await getUserId(ctx)
 //   }
-
-//   console.log(userId, 'userId')
-
 // }
 
-export const getAllOrders = async(refreshToken:any) => {
-  let userId:any= 3
+export const getAllOrders = async(ctx) => {
+  let userId:any
+  if(ctx.get('maskedId') > 0) {
+    userId = ctx.get('maskedId')
+    userId = parseInt(userId);
+  } else {
+    userId = await getUserId(ctx)
+  }
 
   const integId: any = await getIntegId(userId)
   console.log(integId, '🚀 this is the integration ID')
@@ -76,27 +66,17 @@ export const getAllOrders = async(refreshToken:any) => {
   console.log(originId, '🚀 this is the default origin id of the user')
 
   //* extracted from the gsOrigin
-  const originJson = `{
-    "id": ${gsOrigin?.id},
-    "first_name": "${gsOrigin?.first_name}",
-    "last_name": "${gsOrigin?.last_name}",
-    "company": "${gsOrigin?.company}",
-    "address": "${gsOrigin?.address}",
-    "city": "${gsOrigin?.city}",
-    "state": "${gsOrigin?.state}",
-    "postal": "${gsOrigin?.postal}",
-    "postal_origin": "${gsOrigin?.postal_origin}",
-    "country": "${gsOrigin?.country}",
-    "phone": "${gsOrigin?.phone}",
-    "is_default": 1,
-    "timezone": "${gsOrigin?.timezone}"
-  }`;
+  const originJson:any = `{\"id\":${gsOrigin?.id},\"first_name\":\"${gsOrigin?.first_name}\",\"last_name\":\"${gsOrigin?.last_name}\",\"company\":\"${gsOrigin?.company}\",\"address\":\"${gsOrigin?.address}\",\"city\":\"${gsOrigin?.city}\",\"state\":\"${gsOrigin?.state}\",\"postal\":\"${gsOrigin?.postal}\",\"postal_origin\":\"${gsOrigin?.postal_origin}\",\"country\":\"${gsOrigin?.country}\",\"phone\":\"${gsOrigin?.phone}\",\"is_default\":1,\"timezone\":\"${gsOrigin?.timezone}\"}`;
   console.log(originJson, '🚀 this is the default origin id of the user (json)')
 
   let gsOrderId:any = []
   let arrayShippings:any = []
   let arrayOrders:any = []
+  let arrayOrderItems:any = []
 
+  //* Getting order from the store
+  //* Define the OAuth request parameters
+  const refreshToken = await RefreshToken();
   const QueryOrders = {
     'query': {
         'filter': '{"paymentStatus":"PAID"}',
@@ -114,17 +94,13 @@ export const getAllOrders = async(refreshToken:any) => {
         }
     })
 
-    // if(gsOrders.length == 0) {
-    //   console.log(orders.data.orders[0], '🚀 pulled order in the wix store')
-    // }
-
     gsOrders.forEach(gsOrder => {
       if (gsOrder.id) gsOrderId.push(gsOrder.remote_id)
     })
 
-  console.log(gsOrderId, '🚀 gsOrderId')
+  // console.log(gsOrderId, '🚀 gsOrderId')
 
-    //mapping the response json to the shipping_addresses column
+    //* mapping the response json to the database
     orders?.data?.orders?.forEach((item:any) => {
       if(!(gsOrderId?.includes((item?.id)))) {
         const shippingData: any = {
@@ -159,10 +135,23 @@ export const getAllOrders = async(refreshToken:any) => {
           weight_unit: item.weightUnit,
           total_weight: item.totals.weight
         }
+        const lineItems = item.lineItems.map((item:any) => (
+          {
+            name: item.name,
+            price: item.price,
+            quantity: item.quantity,
+            sku: item.sku,
+            created_at: new Date(),
+            updated_at: new Date()
+          }
+        ));
         arrayShippings.push(shippingData)
         arrayOrders.push(orderData)
+        arrayOrderItems.push(lineItems)
       }
     })
+
+    // console.log(arrayOrderItems, `this is the items ${arrayOrderItems.length}`)
 
     let gsShippingIds:any = []
 
@@ -177,12 +166,12 @@ export const getAllOrders = async(refreshToken:any) => {
           address: shipping.address ?? null,
           address2: shipping.address2 ?? null,
           city: shipping.city,
-          province: shipping.province ?? null,
+          province: shipping.province?.split('-')[1] ?? null,
           postal_code: shipping.postal_code,
           country: shipping.country,
           phone: shipping.phone,
           email: shipping.email,
-          marketplace_id: 22,
+          marketplace_id: 21,
           created_at: new Date(),
           updated_at: new Date(),
         }
@@ -191,7 +180,7 @@ export const getAllOrders = async(refreshToken:any) => {
       // console.log(createdShipping, '🚀 after createdShipping ')
     })
 
-    console.log(gsShippingIds, 'gsShipping Ids')
+    // console.log(gsShippingIds, 'gsShipping Ids')
     await Promise.all(createShippingAddress)
 
     const shipping_service:any = await prisma.shipping_services.findFirst(
@@ -201,12 +190,13 @@ export const getAllOrders = async(refreshToken:any) => {
           },
       }
   )
+    let order_id:any = [];
 
     //* saving to the order table
     const createOrder = arrayOrders.map(async (order: any, index:number) => {
       order.weight_unit == "LB" ? order.weight_unit : Math.floor(order.total_weight * 2.20462)
-      console.log(order.total_weight, '🚀 weight is now in lb')
-      await prisma.orders.create({
+      // console.log(order.total_weight, '🚀 weight is now in lb')
+      const createdOrder = await prisma.orders.create({
         data: {
           user_id:order.user_id,
           integration_id:order.integration_id,
@@ -224,18 +214,51 @@ export const getAllOrders = async(refreshToken:any) => {
           updated_at: new Date(),
           parent_id:order.parent_id,
           is_parent: false,
-          origin_json: JSON.parse(originJson),
+          origin_json: originJson,
           order_number:order?.order_number,
           total_weight: order.total_weight
         }
       })
+      order_id.push(createdOrder.id)
     })
-
-
 
     await Promise.all(createOrder)
 
-    //* the return is in the form of {orders: [{id...}]}
-    // console.log(getOrder.data.orders[0], 'getting order')
-    return orders;
+    const createOrderItem = arrayOrderItems.map(async (item: any, index:number) => {
+      item.map(async( list: any) => {
+        await prisma.order_items.create({
+        data: {
+          order_id: order_id[index],
+          name: list.name,
+          price: list.price,
+          quantity: list.quantity,
+          created_at: list.created_at,
+          updated_at: list.updated_at,
+          sku: list.sku
+        }
+      })
+      })
+    })
+
+    await Promise.all(createOrderItem)
+
+    const allOrders = await syncOrders(ctx)
+    ctx.status = 200;
+    return ctx.body = [index, allOrders]
+}
+
+export const syncOrders = async(ctx:any) => {
+  let userId:any
+
+  const integId: any = await getIntegId(userId)
+  console.log(integId, '🚀 this is the integration ID')
+
+  const gsOrders = await prisma.orders.findMany({
+    where: {
+      user_id: userId,
+      integration_id: integId
+    }
+  })
+
+  return gsOrders
 }

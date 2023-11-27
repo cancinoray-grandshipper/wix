@@ -8,10 +8,27 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.prismaExperiment = exports.processInteg = exports.getIntegId = void 0;
+exports.deleteIntegration = exports.updateInteg = exports.saveInteg = exports.processInteg = exports.getIntegId = exports.getUserId = void 0;
 const client_1 = require("@prisma/client");
 const prisma = new client_1.PrismaClient();
+const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
+const dotenv_1 = __importDefault(require("dotenv"));
+// Load environment variables from the .env file
+dotenv_1.default.config();
+function getUserId(ctx) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const xtoken = ctx.get('x-auth-token');
+        const decoded = jsonwebtoken_1.default.verify(xtoken, process.env.JWT_KEY);
+        const decodedString = JSON.stringify(decoded);
+        const decodedParse = JSON.parse(decodedString);
+        return decodedParse.id;
+    });
+}
+exports.getUserId = getUserId;
 function getIntegId(id) {
     return __awaiter(this, void 0, void 0, function* () {
         const integ = yield prisma.integrations.findFirst({
@@ -49,10 +66,81 @@ function processInteg(integId) {
     });
 }
 exports.processInteg = processInteg;
-const prismaExperiment = () => __awaiter(void 0, void 0, void 0, function* () {
-    const data = yield prisma.origins.findMany();
-    console.log(data, 'prisma data integ');
-    return data;
-});
-exports.prismaExperiment = prismaExperiment;
+function saveInteg(ctx, name, nickname = '', maskedId) {
+    return __awaiter(this, void 0, void 0, function* () {
+        let userId;
+        if (maskedId > 0) {
+            userId = maskedId;
+        }
+        else {
+            userId = yield getUserId(ctx);
+        }
+        const integ = yield prisma.integrations.findMany({
+            where: {
+                user_id: userId,
+                marketplace_id: 21,
+            }
+        });
+        console.log(integ, '🚀 this is the list of integ');
+    });
+}
+exports.saveInteg = saveInteg;
+function updateInteg(ctx) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const body = ctx.request.body;
+        const id = body["id"];
+        const name = body["name"];
+        const nickname = body["nickname"];
+        const active = body["active"];
+        try {
+            const updatedInteg = yield prisma.integrations.update({
+                where: {
+                    id: id
+                },
+                data: {
+                    name,
+                    nickname,
+                    active
+                }
+            });
+            ctx.status = 200;
+            return updatedInteg;
+        }
+        catch (error) {
+            console.error(error, "Error!");
+            ctx.status = 400;
+            return ctx.body = error;
+        }
+    });
+}
+exports.updateInteg = updateInteg;
+function deleteIntegration(ctx) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const userId = yield getUserId(ctx);
+        const integrationId = +ctx.params.id;
+        try {
+            yield prisma.orders.deleteMany({
+                where: {
+                    integration_id: integrationId
+                }
+            });
+            yield prisma.integration_settings.deleteMany({
+                where: {
+                    integration_id: integrationId
+                }
+            });
+            const deleteInteg = yield prisma.integrations.deleteMany({
+                where: {
+                    id: integrationId
+                }
+            });
+        }
+        catch (error) {
+            ctx.body = error;
+            ctx.status = 400;
+            return ctx;
+        }
+    });
+}
+exports.deleteIntegration = deleteIntegration;
 //# sourceMappingURL=integController.js.map

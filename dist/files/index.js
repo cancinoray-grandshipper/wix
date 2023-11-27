@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.QueryOrders = exports.CreateAnotherOrder = exports.CreateOrder = void 0;
+exports.MyFolder = exports.QueryOrders = exports.CreateAnotherOrder = exports.CreateOrder = void 0;
 exports.CreateOrder = {
     "order": {
         "id": "7001d34b-11a6-4a34-8746-dc8ababeca42",
@@ -336,9 +336,15 @@ exports.QueryOrders = {
     'query': {
         'filter': '{"paymentStatus":"PAID"}',
         'paging': {
-            'limit': 100,
+            'limit': 1,
         },
-        'sort': '[{"number": "desc"}]'
+        'sort': '{"number": "desc"}'
     },
+};
+exports.MyFolder = {
+    "folder": {
+        "name": "My Folder",
+        "parentId": "root"
+    }
 };
 //# sourceMappingURL=index.js.map

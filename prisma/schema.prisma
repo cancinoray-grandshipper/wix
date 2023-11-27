@@ -49,7 +49,7 @@ model addresses {
   updated_at  DateTime? @db.Timestamp(0)
   deleted_at  DateTime? @db.Timestamp(0)
   acct_id     String?   @db.VarChar(50)
-  users       users     @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "addresses_user_id_foreign")
+  users       users     @relation(fields: [user_id], references: [id], onUpdate: Restrict, map: "addresses_user_id_foreign")
 
   @@index([order_id], map: "addresses_order_id_foreign")
   @@index([user_id], map: "addresses_user_id_index")
@@ -70,7 +70,7 @@ model admin_tokens {
   token      String    @unique(map: "admin_tokens_token_unique") @db.VarChar(64)
   expires_at DateTime? @db.Timestamp(0)
   created_at DateTime  @default(now()) @db.Timestamp(0)
-  admins     admins?   @relation(fields: [admin_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "admin_tokens_admin_id_foreign")
+  admins     admins?   @relation(fields: [admin_id], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "admin_tokens_admin_id_foreign")
 
   @@index([admin_id], map: "admin_tokens_admin_id_foreign")
 }
@@ -100,7 +100,7 @@ model bell_notifications {
   created_at DateTime? @db.Timestamp(0)
   updated_at DateTime? @db.Timestamp(0)
   deleted_at DateTime? @db.Timestamp(0)
-  users      users     @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "bell_notifications_user_id_foreign")
+  users      users     @relation(fields: [user_id], references: [id], onUpdate: Restrict, map: "bell_notifications_user_id_foreign")
 
   @@index([user_id], map: "bell_notifications_user_id_foreign")
 }
@@ -137,8 +137,8 @@ model customers {
   created_at     DateTime?    @db.Timestamp(0)
   updated_at     DateTime?    @db.Timestamp(0)
   deleted_at     DateTime?    @db.Timestamp(0)
-  marketplaces   marketplaces @relation(fields: [marketplace_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "customers_marketplace_id_foreign")
-  users          users        @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "customers_user_id_foreign")
+  marketplaces   marketplaces @relation(fields: [marketplace_id], references: [id], onUpdate: Restrict, map: "customers_marketplace_id_foreign")
+  users          users        @relation(fields: [user_id], references: [id], onUpdate: Restrict, map: "customers_user_id_foreign")
 
   @@index([marketplace_id], map: "customers_marketplace_id_foreign")
   @@index([user_id], map: "customers_user_id_foreign")
@@ -154,7 +154,7 @@ model dimensions {
   created_at DateTime? @db.Timestamp(0)
   updated_at DateTime? @db.Timestamp(0)
   deleted_at DateTime? @db.Timestamp(0)
-  users      users     @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "dimensions_user_id_foreign")
+  users      users     @relation(fields: [user_id], references: [id], onUpdate: Restrict, map: "dimensions_user_id_foreign")
 
   @@index([user_id], map: "dimensions_user_id_foreign")
 }
@@ -171,7 +171,7 @@ model email_templates {
   bcc        String?   @db.VarChar(100)
   created_at DateTime? @db.Timestamp(0)
   updated_at DateTime? @db.Timestamp(0)
-  users      users     @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "email_templates_user_id_foreign")
+  users      users     @relation(fields: [user_id], references: [id], onUpdate: Restrict, map: "email_templates_user_id_foreign")
 
   @@index([user_id], map: "email_templates_user_id_foreign")
 }
@@ -186,7 +186,7 @@ model employees {
   updated_at DateTime? @db.Timestamp(0)
   last_login DateTime? @db.Timestamp(0)
   origin_id  Int?
-  users      users     @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "employees_user_id_foreign")
+  users      users     @relation(fields: [user_id], references: [id], onUpdate: Restrict, map: "employees_user_id_foreign")
 
   @@index([user_id], map: "employees_user_id_foreign")
 }
@@ -199,7 +199,7 @@ model integration_settings {
   created_at     DateTime?    @db.Timestamp(0)
   updated_at     DateTime?    @db.Timestamp(0)
   deleted_at     DateTime?    @db.Timestamp(0)
-  integrations   integrations @relation(fields: [integration_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "integration_settings_integration_id_foreign")
+  integrations   integrations @relation(fields: [integration_id], references: [id], onUpdate: Restrict, map: "integration_settings_integration_id_foreign")
 
   @@index([integration_id], map: "integration_settings_integration_id_index")
 }
@@ -216,8 +216,8 @@ model integrations {
   deleted_at           DateTime?              @db.Timestamp(0)
   nickname             String?                @db.VarChar(255)
   integration_settings integration_settings[]
-  marketplaces         marketplaces           @relation(fields: [marketplace_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "integrations_marketplace_id_foreign")
-  users                users                  @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "integrations_user_id_foreign")
+  marketplaces         marketplaces           @relation(fields: [marketplace_id], references: [id], onUpdate: Restrict, map: "integrations_marketplace_id_foreign")
+  users                users                  @relation(fields: [user_id], references: [id], onUpdate: Restrict, map: "integrations_user_id_foreign")
   orders               orders[]
 
   @@index([last_synced_at], map: "integrations_last_synced_at_index")
@@ -267,7 +267,7 @@ model order_items {
   product_id BigInt?   @db.UnsignedBigInt
   sku        String?   @db.VarChar(255)
   orders     orders    @relation(fields: [order_id], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "order_items_ibfk_1")
-  products   products? @relation(fields: [product_id], references: [id], onUpdate: NoAction, map: "order_items_product_id_foreign")
+  products   products? @relation(fields: [product_id], references: [id], onUpdate: Restrict, map: "order_items_product_id_foreign")
 
   @@index([order_id], map: "order_items_order_id_index")
   @@index([product_id], map: "order_items_product_id_foreign")
@@ -302,7 +302,6 @@ model order_labels {
   claimed                Boolean                     @default(false)
   hide_claim             Boolean                     @default(false)
   expected_delivery_date DateTime?                   @db.Timestamp(0)
-  scan_forms             scan_forms[]
   orders                 orders                      @relation(fields: [order_id], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "order_labels_ibfk_3")
 }
 
@@ -382,7 +381,7 @@ model orders {
   insurance_price          Float                        @default(0.00)
   estimated_delivery_date  String?                      @db.VarChar(50)
   delivery_zone            String?                      @db.VarChar(50)
-  origin_json              Json?
+  origin_json              String?                      @db.LongText
   import_status            String?                      @db.VarChar(255)
   import_error             String?                      @db.VarChar(255)
   printed_by               String?                      @default("Admin") @db.VarChar(255)
@@ -411,12 +410,12 @@ model orders {
   order_meta               order_meta[]
   order_rate_components    order_rate_components[]
   shipping_addresses       shipping_addresses?          @relation(fields: [shipping_address_id], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "orders_shipping_address_id_foreign")
-  shipping_services        shipping_services?           @relation(fields: [shipping_service_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "orders_shipping_services_id_foreign")
-  integrations             integrations?                @relation(fields: [integration_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "orders_integration_id_foreign")
-  marketplaces             marketplaces                 @relation(fields: [marketplace_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "orders_marketplace_id_foreign")
-  order_statuses           order_statuses               @relation(fields: [order_status_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "orders_order_status_id_foreign")
-  origins                  origins?                     @relation(fields: [origin_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "orders_origin_id_foreign")
-  users                    users                        @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "orders_user_id_foreign")
+  shipping_services        shipping_services?           @relation(fields: [shipping_service_id], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "orders_shipping_services_id_foreign")
+  integrations             integrations?                @relation(fields: [integration_id], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "orders_integration_id_foreign")
+  marketplaces             marketplaces                 @relation(fields: [marketplace_id], references: [id], onUpdate: Restrict, map: "orders_marketplace_id_foreign")
+  order_statuses           order_statuses               @relation(fields: [order_status_id], references: [id], onUpdate: Restrict, map: "orders_order_status_id_foreign")
+  origins                  origins?                     @relation(fields: [origin_id], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "orders_origin_id_foreign")
+  users                    users                        @relation(fields: [user_id], references: [id], onUpdate: Restrict, map: "orders_user_id_foreign")
   shipments                shipments[]
 
   @@index([confirmation], map: "orders_confirmation_index")
@@ -475,7 +474,7 @@ model postal_contacts {
   created_at          DateTime? @db.Timestamp(0)
   updated_at          DateTime? @db.Timestamp(0)
   deleted_at          DateTime? @db.Timestamp(0)
-  users               users     @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "postal_contacts_user_id_foreign")
+  users               users     @relation(fields: [user_id], references: [id], onUpdate: Restrict, map: "postal_contacts_user_id_foreign")
 }
 
 model postal_offices {
@@ -489,7 +488,7 @@ model postal_offices {
   created_at   DateTime? @db.Timestamp(0)
   updated_at   DateTime? @db.Timestamp(0)
   deleted_at   DateTime? @db.Timestamp(0)
-  users        users     @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "postal_offices_user_id_foreign")
+  users        users     @relation(fields: [user_id], references: [id], onUpdate: Restrict, map: "postal_offices_user_id_foreign")
 }
 
 model print_histories {
@@ -506,7 +505,7 @@ model print_histories {
   skipped     String?   @db.LongText
   printed_by  String?   @default("Admin") @db.VarChar(255)
   printed_on  String?   @db.VarChar(255)
-  users       users     @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "print_histories_user_id_foreign")
+  users       users     @relation(fields: [user_id], references: [id], onUpdate: Restrict, map: "print_histories_user_id_foreign")
 
   @@index([user_id], map: "print_histories_user_id_foreign")
 }
@@ -527,24 +526,23 @@ model products {
   created_at       DateTime?     @db.Timestamp(0)
   updated_at       DateTime?     @db.Timestamp(0)
   order_items      order_items[]
-  users            users         @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "products_user_id_foreign")
+  users            users         @relation(fields: [user_id], references: [id], onUpdate: Restrict, map: "products_user_id_foreign")
 
   @@index([user_id], map: "products_user_id_foreign")
 }
 
 model scan_forms {
-  id                   Int           @id @default(autoincrement()) @db.UnsignedInt
-  user_id              Int           @db.UnsignedInt
-  pdf                  Bytes?        @db.Blob
-  pdf_url              String?       @db.VarChar(255)
-  labels               Int?          @db.UnsignedInt
-  coverage             DateTime      @default(dbgenerated("'2020-09-21'")) @db.Date
-  manifest_id          String?       @db.VarChar(255)
-  manifest_tracking_id String?       @db.VarChar(255)
-  created_at           DateTime?     @db.Timestamp(0)
-  updated_at           DateTime?     @db.Timestamp(0)
-  users                users         @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "scan_forms_user_id_foreign")
-  order_labels         order_labels? @relation(fields: [labels], references: [id])
+  id                   Int       @id @default(autoincrement()) @db.UnsignedInt
+  user_id              Int       @db.UnsignedInt
+  pdf                  Bytes?    @db.Blob
+  pdf_url              String?   @db.VarChar(255)
+  labels               String?   @db.VarChar(255)
+  coverage             DateTime  @default(dbgenerated("('2020-09-21')")) @db.Date
+  manifest_id          String?   @db.VarChar(255)
+  manifest_tracking_id String?   @db.VarChar(255)
+  created_at           DateTime? @db.Timestamp(0)
+  updated_at           DateTime? @db.Timestamp(0)
+  users                users     @relation(fields: [user_id], references: [id], onUpdate: Restrict, map: "scan_forms_user_id_foreign")
 
   @@index([user_id], map: "scan_forms_user_id_foreign")
 }
@@ -565,8 +563,8 @@ model shipments {
   created_at DateTime? @db.Timestamp(0)
   updated_at DateTime? @db.Timestamp(0)
   deleted_at DateTime? @db.Timestamp(0)
-  orders     orders    @relation(fields: [order_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "shipments_order_id_foreign")
-  users      users     @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "shipments_user_id_foreign")
+  orders     orders    @relation(fields: [order_id], references: [id], onUpdate: Restrict, map: "shipments_order_id_foreign")
+  users      users     @relation(fields: [user_id], references: [id], onUpdate: Restrict, map: "shipments_user_id_foreign")
 
   @@index([order_id], map: "shipments_order_id_index")
   @@index([user_id], map: "shipments_user_id_index")
@@ -592,7 +590,7 @@ model shipping_addresses {
   updated_at     DateTime? @db.Timestamp(0)
   deleted_at     DateTime? @db.Timestamp(0)
   orders         orders[]
-  users          users     @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "shipping_addresses_ibfk_1")
+  users          users     @relation(fields: [user_id], references: [id], onUpdate: Restrict, map: "shipping_addresses_ibfk_1")
 
   @@index([saved], map: "shipping_addresses_saved_index")
   @@index([user_id], map: "shipping_addresses_user_id_foreign")
@@ -612,7 +610,6 @@ model shipping_label_formats {
   bottom      String    @default("0") @db.VarChar(255)
   width       String    @default("0") @db.VarChar(255)
   height      String    @default("0") @db.VarChar(255)
-  users       users[]
 }
 
 model shipping_lines {
@@ -649,7 +646,6 @@ model subscriptions {
   created_at    DateTime? @db.Timestamp(0)
   updated_at    DateTime? @db.Timestamp(0)
   deleted_at    DateTime? @db.Timestamp(0)
-  users         users?    @relation(fields: [user_id], references: [id])
 }
 
 model tax_lines {
@@ -668,8 +664,8 @@ model user_accounts {
   account_user_id                            Int       @db.UnsignedInt
   created_at                                 DateTime? @db.Timestamp(0)
   updated_at                                 DateTime? @db.Timestamp(0)
-  users_user_accounts_user_idTousers         users     @relation("user_accounts_user_idTousers", fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "user_accounts_ibfk_1")
-  users_user_accounts_account_user_idTousers users     @relation("user_accounts_account_user_idTousers", fields: [account_user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "user_accounts_ibfk_2")
+  users_user_accounts_user_idTousers         users     @relation("user_accounts_user_idTousers", fields: [user_id], references: [id], onUpdate: Restrict, map: "user_accounts_ibfk_1")
+  users_user_accounts_account_user_idTousers users     @relation("user_accounts_account_user_idTousers", fields: [account_user_id], references: [id], onUpdate: Restrict, map: "user_accounts_ibfk_2")
 
   @@index([account_user_id], map: "account_user_id")
   @@index([user_id], map: "user_id")
@@ -696,7 +692,7 @@ model users {
   shipper_password                                   String?              @db.VarChar(255)
   company                                            String?              @db.VarChar(255)
   phone                                              String?              @db.VarChar(255)
-  shipping_label_format_id                           Int?                 @db.UnsignedInt
+  shipping_label_format_id                           String?              @db.VarChar(255)
   shipping_label_orientation                         String?              @db.VarChar(255)
   remember_token                                     String?              @db.VarChar(100)
   created_at                                         DateTime?            @db.Timestamp(0)
@@ -728,7 +724,7 @@ model users {
   shipper_username                                   String               @default("shipper") @db.VarChar(100)
   default_printer                                    String?              @db.VarChar(255)
   default_package                                    Boolean              @default(false)
-  package_detail_json                                Json?
+  package_detail_json                                String?              @db.LongText
   enable_guaranteed_claim                            Boolean              @default(false)
   plan_price                                         Decimal?             @db.Decimal(8, 2)
   title                                              String?              @db.VarChar(255)
@@ -743,7 +739,7 @@ model users {
   shipsurance_terms                                  Boolean              @default(false)
   shipsurance_accepted_date                          DateTime?            @db.Timestamp(0)
   survey                                             String?              @db.VarChar(255)
-  marketplaces                                       Json?
+  marketplaces                                       String?              @db.LongText
   notes                                              String?              @db.LongText
   referral                                           Boolean              @default(false)
   suspend                                            Boolean              @default(false)
@@ -751,8 +747,8 @@ model users {
   pb_company                                         String?              @db.VarChar(255)
   pb_name                                            String?              @db.VarChar(255)
   suspend_at                                         DateTime?            @db.DateTime(0)
-  shipping_options                                   String?              @default("[\"LBL\",\"SBR\",\"RLBL\",\"LBLPDF\",\"LBLRLBL\",\"LBLSBR\",\"TSTLBL\"]") @db.VarChar(255)
-  import_shipping_options                            String?              @default("[\"LBL\",\"LBLRLBL\"]") @db.VarChar(255)
+  shipping_options                                   String?              @default("[`LBL`,`SBR`,`RLBL`,`LBLPDF`,`LBLRLBL`,`LBLSBR`,`TSTLBL`]") @db.VarChar(255)
+  import_shipping_options                            String?              @default("[`LBL`,`LBLRLBL`]") @db.VarChar(255)
   shopify_id                                         String?              @db.VarChar(255)
   shopify_integration_id                             String?              @db.VarChar(255)
   shopify_confirmation                               String?              @db.VarChar(255)
@@ -775,12 +771,18 @@ model users {
   user_accounts_user_accounts_account_user_idTousers user_accounts[]      @relation("user_accounts_account_user_idTousers")
   users                                              user_roles?          @relation("usersTousers", fields: [user_role_id], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "users_user_role_id_foreign")
 
-  shipping_label_formats shipping_label_formats? @relation(fields: [shipping_label_format_id], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "users_shipping_label_format_id_foreign")
-  subscriptions          subscriptions[]
-
   @@index([payment_id], map: "users_payment_id_index")
   @@index([shipper_id], map: "users_shipper_id_index")
   @@index([user_role_id], map: "users_user_role_id_foreign")
+}
+
+model sessions {
+  id            String  @unique(map: "sessions_id_unique") @db.VarChar(255)
+  user_id       BigInt? @db.UnsignedBigInt
+  ip_address    String? @db.VarChar(45)
+  user_agent    String? @db.Text
+  payload       String  @db.Text
+  last_activity Int
 }
 
 enum order_labels_status {
