@@ -3,33 +3,21 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.MyFolder = exports.QueryOrders = exports.CreateAnotherOrder = exports.CreateOrder = void 0;
 exports.CreateOrder = {
     "order": {
-        "id": "7001d34b-11a6-4a34-8746-dc8ababeca42",
-        "number": 10012,
-        "dateCreated": "2023-03-07T10:24:03.380Z",
-        "buyerInfo": {
-            "id": "24de6f0b-60ce-4faa-9138-2e39f1415615",
-            "type": "CONTACT",
-            "identityType": "CONTACT",
-            "firstName": "Jane",
-            "lastName": "Doe",
-            "phone": "0555555555",
-            "email": "janedoe@gmail.com",
-            "contactId": "24de6f0b-60ce-4faa-9138-2e39f1415615"
-        },
+        "dateCreated": "2021-05-25T13:51:01.718Z",
         "currency": "USD",
         "weightUnit": "KG",
         "totals": {
-            "subtotal": "130.00",
-            "shipping": "10.0",
+            "subtotal": "105.0",
+            "shipping": "0.0",
             "tax": "0.0",
-            "discount": "10.0",
-            "total": "130.00",
-            "weight": "0",
+            "discount": "0.0",
+            "total": "105",
+            "weight": "0.75",
             "quantity": 3
         },
         "billingInfo": {
-            "paymentMethod": "In Person",
-            "paymentGatewayTransactionId": "620fb6cf-c11f-4b29-8a37-d1bb550a5912",
+            "paymentMethod": "offline",
+            "paymentGatewayTransactionId": "5c08a09b-867b-49bf-afeb-db59548419e0",
             "address": {
                 "fullName": {
                     "firstName": "Jane",
@@ -38,219 +26,110 @@ exports.CreateOrder = {
                 "country": "US",
                 "subdivision": "US-NY",
                 "city": "New York",
-                "zipCode": "10173",
-                "phone": "0555555555",
+                "zipCode": "10011",
+                "phone": "+1234567890",
                 "email": "janedoe@gmail.com",
-                "addressLine1": "525 5th Avenue"
+                "addressLine1": "235 West 23rd Street",
+                "addressLine2": "3rd floor"
             },
-            "refundableByPaymentProvider": true
+            "paidDate": "2021-05-25T13:55:55.130Z"
         },
         "shippingInfo": {
-            "deliveryOption": "Standard US Shipping",
-            "shippingRegion": "USA shipping",
-            "code": "ed5bbce2-9533-dff4-7db0-13702fd139c5",
+            "deliveryOption": "U.S Shipping",
+            "estimatedDeliveryTime": "3 - 5 business days",
+            "shippingRegion": "Region 3",
+            "code": "a0fde0a4-6f4e-3716-64be-c0acbde1696a",
             "shipmentDetails": {
                 "address": {
                     "fullName": {
-                        "firstName": "Jane",
-                        "lastName": "Doe"
+                        "firstName": "Ray",
+                        "lastName": "Cancino"
                     },
                     "country": "US",
                     "subdivision": "US-NY",
                     "city": "New York",
-                    "zipCode": "10173",
-                    "phone": "0555555555",
-                    "email": "janedoe@gmail.com",
-                    "addressLine1": "525 5th Avenue",
-                    "company": "Grandshipper"
+                    "zipCode": "10011",
+                    "phone": "+1234567890",
+                    "email": "raycancino@gmail.com",
+                    "addressLine1": "235 West 23rd Street",
+                    "addressLine2": "3rd floor"
                 },
                 "trackingInfo": {
-                    "trackingNumber": "43255",
-                    "shippingProvider": "FEDEX",
-                    "trackingLink": "https://www.fedex.com/apps/fedextrack/?action=track&trackingnumber=43255"
+                    "trackingNumber": "12345",
+                    "shippingProvider": "UPS",
+                    "trackingLink": "https://wwwapps.ups.com/WebTracking/track?track=yes&trackNums=12345"
                 },
-                "discount": "0",
+                "discount": "0.0",
                 "tax": "0.0",
                 "priceData": {
                     "taxIncludedInPrice": false,
-                    "price": "10"
+                    "price": "0.0"
                 }
             }
         },
-        "buyerNote": "Happy Birthday!",
         "read": true,
         "archived": false,
         "paymentStatus": "PAID",
-        "fulfillmentStatus": "PARTIALLY_FULFILLED",
+        "fulfillmentStatus": "NOT_FULFILLED",
         "lineItems": [
             {
                 "index": 1,
-                "quantity": 1,
-                "price": "85.00",
-                "name": "Shoe",
-                "translatedName": "Shoe",
-                "productId": "df19c1f7-07d8-a265-42f8-e8dfa824cc6e",
-                "totalPrice": "85.00",
+                "quantity": 3,
+                "price": "35.0",
+                "name": "Indonesian Blend",
+                "translatedName": "Indonesian Blend",
+                "productId": "5376f9ec-b92e-efa9-e4a1-f4f480aa0d3a",
+                "totalPrice": "105.0",
                 "lineItemType": "PHYSICAL",
                 "options": [
                     {
-                        "option": "Color",
-                        "selection": "Brown"
-                    }
-                ],
-                "customTextFields": [],
-                "mediaItem": {
-                    "mediaType": "IMAGE",
-                    "url": "https://static.wixstatic.com/media/3c76e2_bf235c38610f4d2a905db71095b351cf~mv2.jpg/v1/fit/w_1000,h_1000,q_90/file.jpg",
-                    "width": 1000,
-                    "height": 1000,
-                    "mediaId": "3c76e2_bf235c38610f4d2a905db71095b351cf~mv2.jpg",
-                    "id": "3c76e2_bf235c38610f4d2a905db71095b351cf~mv2.jpg"
-                },
-                "sku": "364215376135191",
-                "variantId": "2f430d69-9b75-4874-bfbd-c5f6fa5aff3d",
-                "discount": "0",
-                "tax": "0.0",
-                "taxIncludedInPrice": false,
-                "priceData": {
-                    "taxIncludedInPrice": false,
-                    "price": "85.00",
-                    "totalPrice": "85.00"
-                },
-                "refundedQuantity": 0
-            },
-            {
-                "index": 2,
-                "quantity": 1,
-                "price": "35.00",
-                "name": "Watch",
-                "translatedName": "Watch",
-                "productId": "1a2d7e83-4bef-31d5-09e1-3326ee271c09",
-                "totalPrice": "35.00",
-                "lineItemType": "PHYSICAL",
-                "options": [
-                    {
-                        "option": "Size",
-                        "selection": "Large"
+                        "option": "Weight",
+                        "selection": "250g"
                     },
                     {
-                        "option": "Color",
-                        "selection": "Black"
+                        "option": "Ground for",
+                        "selection": "Stovetop"
                     }
                 ],
-                "customTextFields": [],
+                "customTextFields": [
+                    {
+                        "title": "What would you like written on the custom label?",
+                        "value": "Hope you enjoy the coffee! :)"
+                    }
+                ],
                 "mediaItem": {
                     "mediaType": "IMAGE",
-                    "url": "https://static.wixstatic.com/media/3c76e2_8891bbe3372a428aac976ac59aa0ac74~mv2.jpg/v1/fit/w_1000,h_1000,q_90/file.jpg",
-                    "width": 1000,
-                    "height": 1000,
-                    "mediaId": "3c76e2_8891bbe3372a428aac976ac59aa0ac74~mv2.jpg",
-                    "id": "3c76e2_8891bbe3372a428aac976ac59aa0ac74~mv2.jpg"
+                    "url": "https://static.wixstatic.com/media/nsplsh_316b6449475f3235386255~mv2_d_2977_3951_s_4_2.jpg/v1/fit/w_2977,h_3951,q_90/file.jpg",
+                    "width": 2977,
+                    "height": 3951,
+                    "mediaId": "nsplsh_316b6449475f3235386255~mv2_d_2977_3951_s_4_2.jpg",
+                    "id": "nsplsh_316b6449475f3235386255~mv2_d_2977_3951_s_4_2.jpg"
                 },
-                "sku": "217537123517253",
-                "variantId": "63f56c6d-8dcb-491c-8e06-0220b3cd89f2",
-                "discount": "0",
+                "variantId": "00000000-0000-0020-0005-ad9cdc10d3b8",
+                "discount": "0.0",
                 "tax": "0.0",
                 "taxIncludedInPrice": false,
                 "priceData": {
                     "taxIncludedInPrice": false,
-                    "price": "35.00",
-                    "totalPrice": "35.00"
+                    "price": "35.0",
+                    "totalPrice": "105.0"
                 },
                 "refundedQuantity": 0
             },
-            {
-                "index": 3,
-                "quantity": 1,
-                "price": "10.00",
-                "name": "Shirt",
-                "translatedName": "Shirt",
-                "productId": "c8539b66-7a44-fe18-affc-afec4be8562a",
-                "totalPrice": "10.00",
-                "lineItemType": "PHYSICAL",
-                "options": [],
-                "customTextFields": [],
-                "mediaItem": {
-                    "mediaType": "IMAGE",
-                    "url": "https://static.wixstatic.com/media/3c76e2_c5331f937348492a97df87b0a3b34ea4~mv2.jpg/v1/fit/w_1000,h_1000,q_90/file.jpg",
-                    "width": 1000,
-                    "height": 1000,
-                    "mediaId": "3c76e2_c5331f937348492a97df87b0a3b34ea4~mv2.jpg",
-                    "id": "3c76e2_c5331f937348492a97df87b0a3b34ea4~mv2.jpg"
-                },
-                "sku": "364115376135191",
-                "variantId": "00000000-0000-0000-0000-000000000000",
-                "discount": "10.0",
-                "tax": "0.0",
-                "taxIncludedInPrice": false,
-                "priceData": {
-                    "taxIncludedInPrice": false,
-                    "price": "10.00",
-                    "totalPrice": "10.00"
-                },
-                "refundedQuantity": 0
-            }
         ],
-        "activities": [
-            {
-                "type": "ORDER_PLACED",
-                "timestamp": "2023-03-07T10:24:03.380Z"
-            },
-            {
-                "type": "TRACKING_NUMBER_ADDED",
-                "timestamp": "2023-03-07T10:24:56.406Z"
-            },
-            {
-                "type": "TRACKING_LINK_WAS_SET",
-                "timestamp": "2023-03-07T10:24:56.406Z"
-            },
-            {
-                "type": "ORDER_PARTIALLY_PAID",
-                "timestamp": "2023-03-07T10:25:22.889Z"
-            }
-        ],
-        "fulfillments": [
-            {
-                "id": "47451ae1-7325-4ef6-a0d8-fb91ffa88e2e",
-                "dateCreated": "2023-03-07T10:24:56.406Z",
-                "lineItems": [
-                    {
-                        "index": 1,
-                        "quantity": 1
-                    },
-                    {
-                        "index": 2,
-                        "quantity": 1
-                    }
-                ],
-                "trackingInfo": {
-                    "trackingNumber": "43255",
-                    "shippingProvider": "fedex",
-                    "trackingLink": "https://www.fedex.com/apps/fedextrack/?action=track&trackingnumber=43255"
-                }
-            }
-        ],
-        "discount": {
-            "value": "10.0",
-            "appliedCoupon": {
-                "couponId": "fbb94b06-7447-4161-9c48-59bfcdc39e77",
-                "name": "SUMMERSALE10",
-                "code": "SUMMERSALE10"
-            }
-        },
-        "cartId": "1e61e838-d3a0-4ab7-8348-b37d1d954919",
-        "buyerLanguage": "en",
+        "fulfillments": [],
+        "discount": {},
+        "cartId": "d56e7d15-0f07-4723-9069-c90c5cdec230",
         "channelInfo": {
             "type": "WEB"
         },
         "enteredBy": {
-            "id": "24de6f0b-60ce-4faa-9138-2e39f1415615",
+            "id": "f61f30cd-7474-47b7-95a2-339c0fcacbd3",
             "identityType": "CONTACT"
         },
-        "lastUpdated": "2023-03-07T10:25:22.889Z",
-        "numericId": "10012",
+        "lastUpdated": "2021-05-25T13:55:55.130Z",
+        "numericId": "10108",
         "refunds": [],
-        "checkoutId": "d118aa97-1bcb-462e-9265-3603f6e07df6",
         "isInternalOrderCreate": false
     }
 };

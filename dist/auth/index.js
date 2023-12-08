@@ -13,20 +13,30 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getAppInstance = exports.getAccessToken = exports.getAccessTokensFromWix = exports.RefreshToken = void 0;
+const client_1 = require("@prisma/client");
 const axios_1 = __importDefault(require("axios"));
 const dotenv_1 = __importDefault(require("dotenv"));
 // Load environment variables from the .env file
 dotenv_1.default.config();
+const prisma = new client_1.PrismaClient();
 const AUTH_PROVIDER_BASE_URL = 'https://www.wixapis.com/oauth';
 const INSTANCE_API_URL = 'https://www.wixapis.com/apps/v1';
-const RefreshToken = () => __awaiter(void 0, void 0, void 0, function* () {
+const RefreshToken = (integId) => __awaiter(void 0, void 0, void 0, function* () {
+    // console.log(integId, 'in refresh token')
+    const integrationSetting = yield prisma.integration_settings.findFirst({
+        where: {
+            integration_id: integId,
+            name: 'refreshToken'
+        }
+    });
+    // console.log(integrationSetting?.value, 'this is the integration setting value')
     try {
         // Define the OAuth request parameters
         const oauthRequest = {
             grant_type: 'refresh_token',
             client_id: process.env.CLIENT_ID,
             client_secret: process.env.CLIENT_SECRET,
-            refresh_token: process.env.REFRESH_TOKEN
+            refresh_token: integrationSetting === null || integrationSetting === void 0 ? void 0 : integrationSetting.value
         };
         // Send the PUT request to the Wix OAuth Access API
         const response = yield axios_1.default.post(`${AUTH_PROVIDER_BASE_URL}/access`, oauthRequest, {
@@ -49,7 +59,7 @@ const getAccessTokensFromWix = (authCode) => __awaiter(void 0, void 0, void 0, f
             client_id: process.env.CLIENT_ID,
             grant_type: 'authorization_code'
         });
-        console.log(response, 'response!');
+        // console.log(response, 'response!')
         return response;
     }
     catch (error) {

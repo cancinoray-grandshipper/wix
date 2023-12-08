@@ -1,9 +1,28 @@
 "use strict";
+// import { PrismaClient } from "@prisma/client";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.db = void 0;
+// declare global {
+//     var prisma: PrismaClient | undefined;
+// };
+// export const db = globalThis.prisma || new PrismaClient();
+// if (process.env.NODE_ENV !== "production") globalThis.prisma = db
 const client_1 = require("@prisma/client");
-;
-exports.db = globalThis.prisma || new client_1.PrismaClient();
-if (process.env.NODE_ENV !== "production")
-    globalThis.prisma = exports.db;
+function default_1(app) {
+    const prisma = new client_1.PrismaClient();
+    app.use((ctx, next) => __awaiter(this, void 0, void 0, function* () {
+        ctx.prisma = prisma;
+        yield next();
+        yield ctx.prisma.$disconnect();
+    }));
+}
+exports.default = default_1;
 //# sourceMappingURL=db.js.map

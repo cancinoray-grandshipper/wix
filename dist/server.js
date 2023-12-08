@@ -18,21 +18,24 @@ const koa2_cors_1 = __importDefault(require("koa2-cors"));
 const koa_logger_1 = __importDefault(require("koa-logger"));
 const routes_1 = __importDefault(require("./routes"));
 const config_1 = require("./config");
-const koa_views_1 = __importDefault(require("koa-views"));
 const path_1 = __importDefault(require("path"));
 const koa_static_1 = __importDefault(require("koa-static"));
+const koa_cookie_1 = __importDefault(require("koa-cookie"));
 const app = new koa_1.default();
 const PORT = config_1.config.port;
 // Body Parsing Middleware
 app.use((0, koa_bodyparser_1.default)());
 // View Engine Middleware
-app.use((0, koa_views_1.default)(path_1.default.join(__dirname, 'views'), {
-    extension: 'pug'
-}));
+// app.use(
+//     views(path.join(__dirname, 'views'), {
+//         extension: 'pug'
+//     })
+// )
 // Static Files Middleware
 app.use((0, koa_static_1.default)(path_1.default.join(__dirname, 'statics')));
 app.use((0, koa2_cors_1.default)());
 app.use((0, koa_logger_1.default)());
+app.use((0, koa_cookie_1.default)());
 app.use(routes_1.default.routes());
 app.use(routes_1.default.allowedMethods());
 const server = app

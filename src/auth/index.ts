@@ -1,33 +1,48 @@
+import { PrismaClient, Prisma } from '@prisma/client'
 import axios from 'axios'
 import dotenv from 'dotenv'
+import { getUserId } from '../controller/integController';
 
 // Load environment variables from the .env file
 dotenv.config();
 
+const prisma = new PrismaClient()
+
+
 const AUTH_PROVIDER_BASE_URL = 'https://www.wixapis.com/oauth';
 const INSTANCE_API_URL = 'https://www.wixapis.com/apps/v1'
 
-export const RefreshToken = async() => {
-    try {
-        // Define the OAuth request parameters
-        const oauthRequest = {
-          grant_type: 'refresh_token',
-          client_id: process.env.CLIENT_ID,
-          client_secret: process.env.CLIENT_SECRET,
-          refresh_token: process.env.REFRESH_TOKEN
-        };
-    
-        // Send the PUT request to the Wix OAuth Access API
-        const response = await axios.post(`${AUTH_PROVIDER_BASE_URL}/access`, oauthRequest, {
-          headers: { 'Content-Type': 'application/json' },
-        });
-
-        return response;
-    } catch(error:any) {
-        console.error
-        console.error('Response Data:', error.response ? error.response.data : 'No response data');
-    throw error;
+export const RefreshToken = async(integId:any) => {
+  // console.log(integId, 'in refresh token')
+  const integrationSetting = await prisma.integration_settings.findFirst({
+    where: {
+      integration_id: integId,
+      name: 'refreshToken'
     }
+  })
+
+  // console.log(integrationSetting?.value, 'this is the integration setting value')
+
+  try {
+      // Define the OAuth request parameters
+      const oauthRequest = {
+        grant_type: 'refresh_token',
+        client_id: process.env.CLIENT_ID,
+        client_secret: process.env.CLIENT_SECRET,
+        refresh_token: integrationSetting?.value
+      };
+  
+      // Send the PUT request to the Wix OAuth Access API
+      const response = await axios.post(`${AUTH_PROVIDER_BASE_URL}/access`, oauthRequest, {
+        headers: { 'Content-Type': 'application/json' },
+      });
+
+      return response;
+  } catch(error:any) {
+      console.error
+      console.error('Response Data:', error.response ? error.response.data : 'No response data');
+  throw error;
+  }
 }
 
 export const getAccessTokensFromWix = async (authCode:any) => {
@@ -38,7 +53,7 @@ export const getAccessTokensFromWix = async (authCode:any) => {
       client_id: process.env.CLIENT_ID,
       grant_type: 'authorization_code'
     })
-    console.log(response, 'response!')
+    // console.log(response, 'response!')
     return response;
   } catch(error: any) {
     console.error

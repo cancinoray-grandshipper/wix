@@ -7,6 +7,7 @@ import { config } from './config'
 import views from 'koa-views'
 import path from 'path'
 import koaStatic from 'koa-static'
+import cookie from 'koa-cookie'
 
 
 
@@ -18,17 +19,18 @@ const PORT = config.port
 app.use(bodyParser())
 
 // View Engine Middleware
-app.use(
-    views(path.join(__dirname, 'views'), {
-        extension: 'pug'
-    })
-)
+// app.use(
+//     views(path.join(__dirname, 'views'), {
+//         extension: 'pug'
+//     })
+// )
 
 // Static Files Middleware
 app.use(koaStatic(path.join(__dirname, 'statics')))
 
 app.use(cors());
 app.use(logger());
+app.use(cookie())
 app.use(router.routes())
 app.use(router.allowedMethods());
 

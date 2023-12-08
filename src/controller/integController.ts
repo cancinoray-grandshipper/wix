@@ -7,7 +7,7 @@ import dotenv from 'dotenv'
 dotenv.config();
 
 export async function getUserId(ctx:any) {
-  const xtoken:any = ctx.get('x-auth-token')
+  const xtoken:any = ctx.get('x-auth-token') || ctx.get('authorization')
   const decoded = jwt.verify(xtoken, process.env.JWT_KEY as string)
   const decodedString = JSON.stringify(decoded)
   const decodedParse = JSON.parse(decodedString)
@@ -20,7 +20,8 @@ export async function getIntegId(id:any) {
     //* marketplace code for wix is 21
       where: {
           user_id: id,
-          marketplace_id: 21
+          marketplace_id: 21,
+          deleted_at: {equals: null}
       }
   })
   if(integ !== null) {
@@ -48,26 +49,6 @@ export async function processInteg(integId:any) {
   }
 }
 
-export async function saveInteg(ctx, name, nickname='', maskedId) {
-  let userId
-  if(maskedId > 0) {
-    userId = maskedId
-  } else {
-    userId = await getUserId(ctx)
-  }
-
-
-  const integ = await prisma.integrations.findMany({
-    where: {
-        user_id: userId,
-        marketplace_id: 21,
-    }
-})
-
-console.log(integ, '🚀 this is the list of integ')
-
-}
-
 export async function updateInteg(ctx:any) {
   const body = ctx.request.body
   const id = body["id"]
@@ -83,7 +64,8 @@ export async function updateInteg(ctx:any) {
         data: {
           name,
           nickname,
-          active
+          active,
+          updated_at: new Date()
         }
       })
 
@@ -96,31 +78,106 @@ export async function updateInteg(ctx:any) {
     }
 }
 
-export async function deleteIntegration(ctx) {
+export async function deleteIntegration(ctx:any) {
   const userId = await getUserId(ctx)
   const integrationId: number = +ctx.params.id
 
   try {
-    await prisma.orders.deleteMany({
+    const deleteIntegSettings = await prisma.integration_settings.updateMany({
       where: {
-        integration_id: integrationId
+          integration_id: integrationId
+      },
+      data: {
+          deleted_at: new Date()
       }
     })
-
-    await prisma.integration_settings.deleteMany({
-      where: {
-        integration_id: integrationId
-      }
+    const deleteInteg = await prisma.integrations.update({
+        where: {
+            id: integrationId
+        },
+        data: {
+            deleted_at: new Date()
+        }
     })
-
-    const deleteInteg = await prisma.integrations.deleteMany({
-      where: {
-        id: integrationId
-      }
-    })
+    ctx.status = 200
   } catch (error: any) {
     ctx.body = error
     ctx.status = 400
     return ctx
+  }
+}
+
+export async function saveInteg(ctx:any, userId:any, refreshToken:any, instanceId:any, siteDisplayName:any) {
+  try {
+    // Check if instanceId already exists
+    const existingSetting = await prisma.integration_settings.findFirst({
+      where: {
+        name: 'instanceId',
+        value: instanceId,
+        deleted_at: {equals: null}
+      },
+    });
+
+    if (existingSetting) {
+      // instanceId already exists, handle accordingly (e.g., throw an error or log a message)
+      console.error('instanceId already exists in integration_settings');
+      return;
+    }
+
+    const saveInteg = await prisma.integrations.create({
+      data: {
+        user_id: userId,
+        marketplace_id: 21,
+        name: siteDisplayName,
+        active: true,
+        created_at: new Date(),
+        updated_at: new Date()
+      }
+    })
+    const saveIntegId = saveInteg.id
+    console.log(saveIntegId, 'saveIntegId')
+
+    await prisma.integration_settings.createMany({
+      data: [
+        {integration_id: saveIntegId, name: 'refreshToken', value:refreshToken, created_at: new Date(), updated_at: new Date()},
+        {integration_id: saveIntegId, name: 'instanceId', value:instanceId, created_at: new Date(), updated_at: new Date()}
+      ]
+    })
+
+    return saveIntegId
+  } catch (error: any) {
+    console.error("Error:", error);
+    console.error(
+      "Response Data:",
+      error.response ? error.response.data : "No response data"
+    );
+    ctx.status = 500;
+    ctx.body = "Internal Server Error";
+  }
+}
+
+export async function processDatabase (ctx: any) {
+  console.log(ctx.header.authorization, 'ctx is here')
+  const userID = await getUserId(ctx)
+  const integrationId: number = +ctx.params.id
+
+  try {
+    await prisma.integrations.update({
+      where: {
+        id: integrationId
+        },
+        data: {
+          user_id: userID
+        },
+      })
+    ctx.status = 200
+  } catch (error: any) {
+    console.error("Error:", error);
+    console.error(
+      "Response Data:",
+      error.response ? error.response.data : "No response data"
+    );
+    ctx.status = 500;
+    ctx.body = "Internal Server Error";
   }
 }

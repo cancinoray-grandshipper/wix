@@ -1,18 +1,18 @@
+import cors from 'koa2-cors';
+import { PrismaClient, Prisma } from '@prisma/client'
 import Router from "koa-router";
 import axios from "axios";
 import dotenv from 'dotenv'
 import jwt from 'jsonwebtoken'
 import { RefreshToken, getAppInstance } from "../auth";
-import { CreateOrder, CreateAnotherOrder, QueryOrders, MyFolder } from "../files";
-import { getAllOrders} from "../controller/wixController";
+import { deleteOrder, fulfilOrder, getAllOrders} from "../controller/wixController";
 import { getAccessTokensFromWix, getAccessToken } from "../auth";
-import { deleteIntegration, saveInteg, updateInteg } from "../controller/integController";
-// interface RefreshTokenRequestBody {
-//     refresh_token: string;
-// }
+import { deleteIntegration, processDatabase, saveInteg, updateInteg } from "../controller/integController";
+
 
 // Load environment variables from the .env file
 dotenv.config();
+const prisma = new PrismaClient()
 
 const incomingWebhooks: any =  [];
 
@@ -22,6 +22,7 @@ router.get("/", async(ctx) => {
   ctx.body = "Wix!"
 })
 
+//* testing
 router.get("/ping", async (ctx) => {
   try {
     ctx.body = {
@@ -29,86 +30,10 @@ router.get("/ping", async (ctx) => {
       data: "pong",
       market: "Wix"
     };
+
+    console.log(ctx, '🚀 this is the received ctx')
   } catch (error) {
     console.log(error, "error");
-  }
-});
-
-
-
-router.post("/using-token", async (ctx) => {
-  try {
-    // Define the OAuth request parameters
-    const refreshToken = await RefreshToken();
-
-    // Handle the API response here
-    // ctx.status = refreshToken.status;
-    // ctx.body = refreshToken.data;
-    ctx.body = {
-      access_token: refreshToken.data.access_token,
-    };
-  } catch (error: any) {
-    console.error("Error:", error);
-    console.error(
-      "Response Data:",
-      error.response ? error.response.data : "No response data"
-    );
-    ctx.status = 500;
-    ctx.body = "Internal Server Error";
-  }
-});
-
-router.post("/orders", async (ctx) => {
-  try {
-    const refreshToken = await RefreshToken();
-
-
-    const order = await axios.post('https://www.wixapis.com/stores/v2/orders', CreateOrder, {
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': refreshToken.data.access_token
-        }
-    })
-
-    ctx.body = {
-        body_response: order.data
-    }
-    ctx.status = order.status
-  } catch (error: any) {
-    console.error("Error:", error);
-    console.error(
-      "Response Data:",
-      error.response ? error.response.data : "No response data"
-    );
-    ctx.status = 500;
-    ctx.body = "Internal Server Error";
-  }
-});
-
-router.post("/orders-all", async (ctx) => {
-  try {
-    const refreshToken = await RefreshToken();
-
-
-    const order = await axios.post('https://www.wixapis.com/stores/v2/orders/query', QueryOrders, {
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': refreshToken.data.access_token
-        }
-    })
-
-    ctx.body = {
-        order_response: order.data
-    }
-    ctx.status = order.status
-  } catch (error: any) {
-    console.error("Error:", error);
-    console.error(
-      "Response Data:",
-      error.response ? error.response.data : "No response data"
-    );
-    ctx.status = 500;
-    ctx.body = "Internal Server Error";
   }
 });
 
@@ -128,20 +53,12 @@ router.get('/ecomm/wix/orders/get', async (ctx) => {
   }
 })
 
-//* saving the store
-router.post('/ecomm/wix/integ/save', async(ctx, next) => {
+router.put('/ecomm/wix/integ/update', async (ctx) => {
   try {
-    const body:any = ctx.request.body;
-    const name = body.name
-    const id = body.maskedId
-    const nickName = body.nickName ?? ''
-    console.log(body, 'this is the body in the ctx.request')
 
-    // Redirect to the specified link
-    ctx.redirect('https://www.wix.com/market?appMarketParams=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjoie1wicm91dGVcIjpcInNoYXJlQXBwXCIsXCJhcHBEZWZJZFwiOlwiZjliNjc1ZTEtMTUwMy00Yjk1LTk0NzItMzNkNjhjMWQ0NDZmXCIsXCJzaGFyZUlkXCI6XCI1MTFiMzc0MS1lYTJjLTQyMmEtYTIxYS0xZDQxYjMyMjZjMDJcIixcInZlcnNpb25cIjpcImxhdGVzdFwifSIsImlhdCI6MTcwMTA2OTUyMX0.vumeq_MgagRyoJ2QKnclqAujhZXtl5uNq_eN-JF9FMU');
+    await updateInteg(ctx)
 
-    const saveIntegCheck = await saveInteg(ctx, name, nickName, id)
-  }catch (error:any) {
+  } catch(error: any) {
     console.error("Error:", error);
     console.error(
       "Response Data:",
@@ -152,11 +69,10 @@ router.post('/ecomm/wix/integ/save', async(ctx, next) => {
   }
 })
 
-
-router.put('/ecomm/wix/integ/update', async (ctx) => {
+router.delete('/ecomm/wix/order/delete/:id', async(ctx) => {
   try {
 
-    await updateInteg(ctx)
+    await deleteOrder(ctx)
 
   } catch(error: any) {
     console.error("Error:", error);
@@ -185,22 +101,30 @@ router.delete('/ecomm/wix/integ/delete/:id', async (ctx) => {
   }
 })
 
+router.put('/ecomm/wix/fulfillment', async (ctx) => {
+  try {
+    await fulfilOrder(ctx)
+    ctx.body = {message: 'Order Completed!'}
+  } catch (error: any) {
+    console.error("Error:", error);
+    console.error(
+      "Response Data:",
+      error.response ? error.response.data : "No response data"
+    );
+    ctx.status = 500;
+    ctx.body = "Internal Server Error";
+  }
+})
+
 
 router.get('/signup', async (ctx) => {
   // This route is called before the user is asked to provide consent
   // Configure the `Redirect URL` in Wix Developers to point here
-  // *** PUT YOUR SIGNUP CODE HERE *** ///
-  console.log("got a call from Wix for signup");
-  console.log("==============================");
-
   const permissionRequestUrl = 'https://www.wix.com/installer/install';
   const appId = process.env.CLIENT_ID; // Make sure to define APP_ID
   const redirectUrl = `https://${ctx.request.header.host}/login`;
   const token = ctx.query.token;
   const url = `${permissionRequestUrl}?token=${token}&appId=${appId}&redirectUrl=${redirectUrl}`;
-
-  console.log("redirecting to " + url);
-  console.log("=============================");
 
   ctx.redirect(url);
 });
@@ -209,48 +133,42 @@ router.get('/login', async (ctx) => {
   try {
     // This route is called once the user finishes installing your application, and Wix redirects them to your application's site.
     // Configure the `App URL` in the Wix Developers to point here
-    // *** PUT YOUR LOGIN CODE HERE *** ///
-    console.log("got a call from Wix for login");
-    console.log("=============================");
 
     const authorizationCode = ctx.query.code;
 
-    console.log(`authorizationCode = ${authorizationCode}`);
-
     // Getting Tokens From Wix
-    console.log("getting Tokens From Wix ");
-    console.log("=======================");
     const data:any = await getAccessTokensFromWix(authorizationCode);
-
     const refreshToken = data.data.refresh_token;
     const accessToken = data.data.access_token;
 
-    // console.log("refreshToken = " + refreshToken);
-    console.log(`🚀🚀🚀refreshToken 🚀🚀🚀${refreshToken}`);
-    console.log("=============================");
-    console.log(`🚀🚀🚀accessToken 🚀🚀🚀${accessToken}`);
-    console.log("=============================");
+    const {instance: {instanceId}, site: {siteDisplayName}} = await getAppInstance(refreshToken);
 
-    const {instance: {instanceId}} = await getAppInstance(refreshToken);
-
-    console.log("api call to instance returned: ");
     // console.log(instance);
-    console.log(instanceId)
+    // console.log('Instance ID:', instanceId);
+    // console.log('Site Display Name:', siteDisplayName);
 
     // TODO: Save the instanceId and tokens for future API calls
-    // console.log("=============================");
-    // console.log(`User's site instanceId: ${instance.instance.instanceId}`);
-    // console.log("=============================");
+    // TODO: I need to save the instanceID, siteDisplayName and refreshToken in the database
 
-    // Render the login view
-    // await ctx.render('login', {
-    //   title: 'Wix Application',
-    //   token: refreshToken,
-    // });
-  } catch (wixError) {
-    console.log("Error getting token from Wix");
-    console.log({ wixError });
+    //* temporarily saved the user store in user_id = 3
+    const userId:any = 3
+    // console.log(userId, 'before saveInteg')
+    const integID = await saveInteg(ctx, userId, refreshToken, instanceId, siteDisplayName)
+    console.log(integID, 'integID')
+
+    ctx.status = 301
+    //* after redirecting to the url, frontend will fireup to pass the auth token and extract the user_id of the user
+    //* and called the route /ecomm/wix/process/:id
+    ctx.redirect(`${process.env.REDIRECT_TO}?ecomm=wix&i=${integID}`)
+
+  } catch (error:any) {
+    console.error("Error:", error);
+    console.error(
+      "Response Data:",
+      error.response ? error.response.data : "No response data"
+    );
     ctx.status = 500;
+    ctx.body = "Internal Server Error";
   }
 });
 
@@ -261,16 +179,13 @@ router.post('/webhook-callback', async (ctx:any) => {
     throw new Error('Public key is not defined in the environment variables')
   }
   try {
-    console.log('got webhook event from Wix!', ctx.request.body);
-    console.log('===========================');
-
     // Assuming ctx.request.body is the payload received
     const data:any = jwt.verify(ctx.request.body, publicKey as string);
 
     const parsedData = JSON.parse(data.data);
     const prettyData = { ...data, data: { ...parsedData, data: JSON.parse(parsedData.data) } };
 
-    console.log('webhook event data after verification:', prettyData);
+    // console.log('webhook event data after verification:', prettyData);
     incomingWebhooks.push({ body: prettyData, headers: ctx.headers });
 
     ctx.body = ctx.request.body;
@@ -280,6 +195,20 @@ router.post('/webhook-callback', async (ctx:any) => {
     console.error('Error processing webhook:', error);
   }
 });
+
+router.patch('/ecomm/wix/process/:id', async(ctx) => {
+  try {
+    await processDatabase(ctx)
+  } catch (error:any) {
+    console.error("Error:", error);
+    console.error(
+      "Response Data:",
+      error.response ? error.response.data : "No response data"
+    );
+    ctx.status = 500;
+    ctx.body = "Internal Server Error";
+  }
+})
 
 
 export default router;

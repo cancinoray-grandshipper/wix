@@ -12,21 +12,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.syncOrders = exports.getAllOrders = void 0;
+exports.deleteOrder = exports.fulfilOrder = exports.syncOrders = exports.getAllOrders = void 0;
 const client_1 = require("@prisma/client");
 const axios_1 = __importDefault(require("axios"));
 const integController_1 = require("./integController");
 const auth_1 = require("../auth");
 const prisma = new client_1.PrismaClient();
-// export const getOrders = async(ctx:any) =>  {
-//   let userId:any
-//   if(ctx.get('maskedId') > 0) {
-//     userId = ctx.get('maskedId')
-//     userId = parseInt(userId);
-//   } else {
-//     userId = await getUserId(ctx)
-//   }
-// }
 const getAllOrders = (ctx) => __awaiter(void 0, void 0, void 0, function* () {
     var _a, _b;
     let userId;
@@ -38,7 +29,7 @@ const getAllOrders = (ctx) => __awaiter(void 0, void 0, void 0, function* () {
         userId = yield (0, integController_1.getUserId)(ctx);
     }
     const integId = yield (0, integController_1.getIntegId)(userId);
-    console.log(integId, '🚀 this is the integration ID');
+    // console.log(integId, '🚀 this is the integration ID')
     let index;
     try {
         index = yield (0, integController_1.processInteg)(integId);
@@ -47,14 +38,6 @@ const getAllOrders = (ctx) => __awaiter(void 0, void 0, void 0, function* () {
         console.error(error, "Error!");
     }
     console.log(index, '🚀 this is the index');
-    // ? It should be separated. we just want to get the credential to get the access_token
-    // const wixClientId = await prisma?.integration_settings.findFirst({
-    //   where: {
-    //     integration_id: integId,
-    //     name: "wixClientId"
-    //   }
-    // })
-    // console.log(wixClientId, 'this is the wix client id!')
     const gsOrders = yield prisma.orders.findMany({
         where: {
             user_id: userId,
@@ -69,23 +52,32 @@ const getAllOrders = (ctx) => __awaiter(void 0, void 0, void 0, function* () {
             is_default: true
         }
     });
-    console.log(gsOrigin, '🚀 this is the default origin of the user');
+    // console.log(gsOrigin, '🚀 this is the default origin of the user')
     //* id of the origin address
     const originId = gsOrigin === null || gsOrigin === void 0 ? void 0 : gsOrigin.id;
-    console.log(originId, '🚀 this is the default origin id of the user');
+    // console.log(originId, '🚀 this is the default origin id of the user')
     //* extracted from the gsOrigin
     const originJson = `{\"id\":${gsOrigin === null || gsOrigin === void 0 ? void 0 : gsOrigin.id},\"first_name\":\"${gsOrigin === null || gsOrigin === void 0 ? void 0 : gsOrigin.first_name}\",\"last_name\":\"${gsOrigin === null || gsOrigin === void 0 ? void 0 : gsOrigin.last_name}\",\"company\":\"${gsOrigin === null || gsOrigin === void 0 ? void 0 : gsOrigin.company}\",\"address\":\"${gsOrigin === null || gsOrigin === void 0 ? void 0 : gsOrigin.address}\",\"city\":\"${gsOrigin === null || gsOrigin === void 0 ? void 0 : gsOrigin.city}\",\"state\":\"${gsOrigin === null || gsOrigin === void 0 ? void 0 : gsOrigin.state}\",\"postal\":\"${gsOrigin === null || gsOrigin === void 0 ? void 0 : gsOrigin.postal}\",\"postal_origin\":\"${gsOrigin === null || gsOrigin === void 0 ? void 0 : gsOrigin.postal_origin}\",\"country\":\"${gsOrigin === null || gsOrigin === void 0 ? void 0 : gsOrigin.country}\",\"phone\":\"${gsOrigin === null || gsOrigin === void 0 ? void 0 : gsOrigin.phone}\",\"is_default\":1,\"timezone\":\"${gsOrigin === null || gsOrigin === void 0 ? void 0 : gsOrigin.timezone}\"}`;
-    console.log(originJson, '🚀 this is the default origin id of the user (json)');
+    // console.log(originJson, '🚀 this is the default origin id of the user (json)')
     let gsOrderId = [];
     let arrayShippings = [];
     let arrayOrders = [];
     let arrayOrderItems = [];
     //* Getting order from the store
     //* Define the OAuth request parameters
-    const refreshToken = yield (0, auth_1.RefreshToken)();
+    const refreshToken = yield (0, auth_1.RefreshToken)(integId);
     const QueryOrders = {
         'query': {
-            'filter': '{"paymentStatus":"PAID"}',
+            'filter': `{
+          "$and": [
+            {
+              "archived":false
+            },
+            {
+              "fulfillmentStatus" : {"$ne" : "FULFILLED"}
+            }
+          ]
+        }`,
             'paging': {
                 'limit': 100,
             },
@@ -98,6 +90,7 @@ const getAllOrders = (ctx) => __awaiter(void 0, void 0, void 0, function* () {
             'Authorization': refreshToken.data.access_token
         }
     });
+    // console.log(orders?.data?.orders, 'orders')
     gsOrders.forEach(gsOrder => {
         if (gsOrder.id)
             gsOrderId.push(gsOrder.remote_id);
@@ -129,7 +122,7 @@ const getAllOrders = (ctx) => __awaiter(void 0, void 0, void 0, function* () {
                 integration_id: integId,
                 marketplace_id: 21,
                 remote_id: item.id,
-                total_price: item.totals.total,
+                declared_value: item.totals.total,
                 special_services: '',
                 order_status_id: 1,
                 description: item.billingInfo.paymentMethod,
@@ -189,7 +182,7 @@ const getAllOrders = (ctx) => __awaiter(void 0, void 0, void 0, function* () {
     let order_id = [];
     //* saving to the order table
     const createOrder = arrayOrders.map((order, index) => __awaiter(void 0, void 0, void 0, function* () {
-        order.weight_unit == "LB" ? order.weight_unit : Math.floor(order.total_weight * 2.20462);
+        order.weight_unit === "KG" ? order.total_weight = (Math.ceil(Number(order.total_weight) * 35.27396)) : (Math.ceil(Number(order.total_weight) * 16));
         // console.log(order.total_weight, '🚀 weight is now in lb')
         const createdOrder = yield prisma.orders.create({
             data: {
@@ -198,7 +191,7 @@ const getAllOrders = (ctx) => __awaiter(void 0, void 0, void 0, function* () {
                 marketplace_id: order.marketplace_id,
                 shipping_address_id: gsShippingIds[index],
                 remote_id: order.remote_id,
-                total_price: order.total_price,
+                declared_value: order.declared_value,
                 package_type: 'PKG',
                 shipping_service_id: shipping_service === null || shipping_service === void 0 ? void 0 : shipping_service.id,
                 special_services: shipping_service === null || shipping_service === void 0 ? void 0 : shipping_service.special_services,
@@ -214,6 +207,7 @@ const getAllOrders = (ctx) => __awaiter(void 0, void 0, void 0, function* () {
                 total_weight: order.total_weight
             }
         });
+        yield axios_1.default.get(`${process.env.WIX_PHP_SERVER_API}/rate-it/${createdOrder.id}`);
         order_id.push(createdOrder.id);
     }));
     yield Promise.all(createOrder);
@@ -233,6 +227,42 @@ const getAllOrders = (ctx) => __awaiter(void 0, void 0, void 0, function* () {
         }));
     }));
     yield Promise.all(createOrderItem);
+    /**
+     * testing for fulfillment
+    */
+    // const order_items:any = await prisma.order_items.findMany({
+    //   where: {
+    //     order_id : 6080
+    //   }
+    // })
+    // console.log(order_items, 'order items')
+    // // order_items.forEach((item:any) => console.log(item.quantity, 'items'))
+    // const lineItems = order_items.map((item:any, index:any) => ({
+    //   index: index + 1,
+    //   quantity: item.quantity
+    // }))
+    // const order_label = await prisma.order_labels.findFirst({
+    //   where: {
+    //     order_id: 6073
+    //   }
+    // })
+    // console.log(lineItems, 'line items')
+    // // console.log(order_label?.tracking_id, 'order label')
+    // console.log(
+    //   `{
+    //     "fulfillment": {
+    //       "lineItems": ${JSON.stringify(lineItems)},
+    //       "trackingInfo": {
+    //         "shippingProvider": "usps",
+    //         "trackingNumber": "${order_label?.tracking_id}",
+    //         "trackingLink": "https://tools.usps.com/go/TrackConfirmAction?tLabels=${order_label?.tracking_id}"
+    //       }
+    //     }
+    //   }`
+    // )
+    /**
+     * testing for fulfillment
+    */
     const allOrders = yield (0, exports.syncOrders)(ctx);
     ctx.status = 200;
     return ctx.body = [index, allOrders];
@@ -240,6 +270,12 @@ const getAllOrders = (ctx) => __awaiter(void 0, void 0, void 0, function* () {
 exports.getAllOrders = getAllOrders;
 const syncOrders = (ctx) => __awaiter(void 0, void 0, void 0, function* () {
     let userId;
+    if (ctx.get('masked') > 0) {
+        userId = parseInt(ctx.get('maskedId'));
+    }
+    else {
+        userId = yield (0, integController_1.getUserId)(ctx);
+    }
     const integId = yield (0, integController_1.getIntegId)(userId);
     console.log(integId, '🚀 this is the integration ID');
     const gsOrders = yield prisma.orders.findMany({
@@ -251,4 +287,77 @@ const syncOrders = (ctx) => __awaiter(void 0, void 0, void 0, function* () {
     return gsOrders;
 });
 exports.syncOrders = syncOrders;
+const fulfilOrder = (ctx) => __awaiter(void 0, void 0, void 0, function* () {
+    console.log("FULFILLMENT CALLED");
+    try {
+        const orderId = ctx.request.body.order_id;
+        const order = yield prisma.orders.findFirst({
+            where: {
+                id: orderId
+            }
+        });
+        const order_label = yield prisma.order_labels.findFirst({
+            where: {
+                order_id: orderId
+            }
+        });
+        const integId = yield (0, integController_1.getIntegId)(order.user_id);
+        const order_items = yield prisma.order_items.findMany({
+            where: {
+                order_id: orderId
+            }
+        });
+        const lineItems = order_items.map((item, index) => ({
+            index: index + 1,
+            quantity: item.quantity
+        }));
+        const refreshToken = yield (0, auth_1.RefreshToken)(integId);
+        const CreateFulfillment = {
+            "fulfillment": {
+                "lineItems": lineItems,
+                "trackingInfo": {
+                    "shippingProvider": "usps",
+                    "trackingNumber": order_label === null || order_label === void 0 ? void 0 : order_label.tracking_id,
+                    "trackingLink": `https://tools.usps.com/go/TrackConfirmAction?tLabels=${order_label === null || order_label === void 0 ? void 0 : order_label.tracking_id}`
+                }
+            }
+        };
+        const fulfillment = yield axios_1.default.post(`https://www.wixapis.com/stores/v2/orders/${order === null || order === void 0 ? void 0 : order.remote_id}/fulfillments`, CreateFulfillment, {
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': refreshToken.data.access_token
+            }
+        });
+        return fulfillment;
+    }
+    catch (error) {
+        console.log(error, 'Error');
+    }
+});
+exports.fulfilOrder = fulfilOrder;
+const deleteOrder = (ctx) => __awaiter(void 0, void 0, void 0, function* () {
+    console.log("DELETE ORDERS CALLED");
+    let userId;
+    if (ctx.get('maskedId') > 0) {
+        userId = parseInt(ctx.get('maskedId'));
+    }
+    else {
+        userId = yield (0, integController_1.getUserId)(ctx);
+    }
+    const orderId = ctx.params.id;
+    try {
+        const deleteUser = yield prisma.orders.delete({
+            where: {
+                id: orderId,
+            }
+        });
+        return orderId;
+    }
+    catch (error) {
+        ctx.body = error;
+        ctx.status = 400;
+        return ctx;
+    }
+});
+exports.deleteOrder = deleteOrder;
 //# sourceMappingURL=wixController.js.map
